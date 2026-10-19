@@ -1,2 +1,1 @@
-# MinuteGate
-MinuteGate
+MinuteGate — open-source agent payment layer. Under development.

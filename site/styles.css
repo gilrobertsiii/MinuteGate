@@ -129,6 +129,27 @@ a:hover {
   gap: 0.75rem;
 }
 
+@media (max-width: 479px) {
+  .site-header__inner {
+    flex-wrap: nowrap;
+    gap: 0.75rem;
+  }
+
+  .wordmark {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  .nav-actions {
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  .nav-actions .btn--ghost {
+    display: none;
+  }
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

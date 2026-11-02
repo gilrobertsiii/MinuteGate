@@ -158,3 +158,16 @@ test("proof header round-trips and rejects junk", () => {
   assert.equal(parseProof("reference=mg_x; order=../../etc"), null);
   assert.equal(parseProof(undefined), null);
 });
+
+test("concurrent identical proofs unlock the resource exactly once", async () => {
+  for (let trial = 0; trial < 5; trial++) {
+    const req = await fresh402();
+    const orderId = await captured({ amount: req.amount, currency: req.currency, reference: req.reference });
+    const results = await Promise.all(
+      Array.from({ length: 5 }, () => retryWithProof(url, req.reference, orderId)),
+    );
+    const unlocked = results.filter((r) => r.status === 200).length;
+    assert.equal(unlocked, 1, `trial ${trial}: ${unlocked} unlocks`);
+    for (const r of results.filter((x) => x.status !== 200)) assert.equal(r.status, 402);
+  }
+});

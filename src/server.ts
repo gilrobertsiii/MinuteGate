@@ -40,6 +40,10 @@ export type CheckResult =
 export class MinuteGate {
   private readonly issued = new Map<string, Issued>();
   private readonly usedOrders = new Set<string>();
+  // References and order ids whose check is in flight. Claimed synchronously before the
+  // first await so concurrent requests with the same proof cannot both pass.
+  private readonly pendingRefs = new Set<string>();
+  private readonly pendingOrders = new Set<string>();
   private readonly rate: Rate;
   private readonly currency: string;
   private readonly ttlMs: number;
@@ -86,7 +90,28 @@ export class MinuteGate {
     if (issued.used) return { ok: false, code: "reference_used" };
     if (this.now() > issued.expiresAt) return { ok: false, code: "reference_expired" };
     if (this.usedOrders.has(proof.orderId)) return { ok: false, code: "order_reused" };
+    if (this.pendingRefs.has(proof.reference)) return { ok: false, code: "reference_used" };
+    if (this.pendingOrders.has(proof.orderId)) return { ok: false, code: "order_reused" };
 
+    this.pendingRefs.add(proof.reference);
+    this.pendingOrders.add(proof.orderId);
+    try {
+      const result = await this.verifyOrder(proof, issued);
+      if (result.ok) {
+        issued.used = true;
+        this.usedOrders.add(proof.orderId);
+      }
+      return result;
+    } finally {
+      this.pendingRefs.delete(proof.reference);
+      this.pendingOrders.delete(proof.orderId);
+    }
+  }
+
+  private async verifyOrder(
+    proof: { reference: string; orderId: string },
+    issued: Issued,
+  ): Promise<CheckResult> {
     let order: Order;
     try {
       order = await this.opts.paypal.getOrder(proof.orderId);
@@ -112,8 +137,6 @@ export class MinuteGate {
       return { ok: false, code: "amount_mismatch" };
     }
 
-    issued.used = true;
-    this.usedOrders.add(proof.orderId);
     return { ok: true, captureId: capture.id, reference: proof.reference };
   }
 }

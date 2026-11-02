@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quickstart · MinuteGate</title>
+    <meta
+      name="description"
+      content="Run the MinuteGate quickstart in mock mode or the payment provider sandbox."
+    />
+    <meta property="og:title" content="MinuteGate quickstart" />
+    <meta
+      property="og:description"
+      content="Install MinuteGate and walk through mock mode and sandbox flows."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23D04B0A' width='32' height='32'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="wordmark" href="/">MinuteGate</a>
+        <nav class="site-nav" aria-label="Primary">
+          <details class="nav-disclosure">
+            <summary class="nav-disclosure__toggle">Menu</summary>
+            <ul class="nav-disclosure__panel">
+              <li>
+                <a class="nav-disclosure__link" href="/#how-it-works">How it works</a>
+              </li>
+              <li>
+                <a
+                  class="nav-disclosure__link"
+                  href="/quickstart/"
+                  aria-current="page"
+                  >Quickstart</a
+                >
+              </li>
+            </ul>
+          </details>
+          <div class="nav-actions">
+            <a class="btn btn--ghost" href="/#how-it-works">How it works</a>
+            <a class="btn btn--primary" href="/quickstart/" aria-current="page">Quickstart</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="doc-page">
+      <article class="section">
+        <div class="container container--narrow doc-article">
+          <h1>MinuteGate quickstart</h1>
+          <p class="doc-mirror">
+            Mirrors
+            <a
+              href="https://github.com/gilrobertsiii/MinuteGate/blob/48a6752/QUICKSTART.md"
+              rel="noopener noreferrer"
+              >QUICKSTART.md at 48a6752</a
+            >
+          </p>
+
+          <p>Two ways to run MinuteGate:</p>
+          <ul>
+            <li>
+              <!-- TODO(Legal LR-1): QUICKSTART.md names the payment provider in mock-mode intro. -->
+              <strong>Mock mode</strong> (start here, and the QA path): the full 402 flow end to
+              end against an in-process payment mock. No provider account, no credentials, no
+              outbound network calls to the payment provider.
+            </li>
+            <li>
+              <!-- TODO(Legal LR-1): QUICKSTART.md names the payment provider in sandbox intro. -->
+              <strong>Sandbox mode</strong> (payment provider): the same code against the
+              payment provider&apos;s sandbox API host, using your own sandbox app credentials
+              from the payment provider.
+            </li>
+          </ul>
+          <p>
+            <!-- TODO(Legal LR-1): QUICKSTART.md names the payment provider sandbox explicitly. -->
+            Payments shown use the payment provider&apos;s sandbox only; no real money moves.
+          </p>
+
+          <h2 id="requirements">Requirements</h2>
+          <ul>
+            <li>Node.js 20 or newer (<code>node --version</code>)</li>
+            <li>git</li>
+          </ul>
+
+          <h2 id="install">1. Install</h2>
+          <div class="code-block-wrap">
+            <div class="code-block-wrap__toolbar">
+              <button
+                type="button"
+                class="code-copy"
+                data-copy-for="qs-install"
+                aria-label="Copy install commands"
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="code-block" id="qs-install"><code>git clone https://github.com/gilrobertsiii/MinuteGate.git
+cd MinuteGate
+npm install</code></pre>
+          </div>
+          <p>
+            <code>npm install</code> adds two development-only packages (<code>typescript</code>,
+            <code>@types/node</code>). The code has no runtime dependencies.
+          </p>
+
+          <h2 id="mock-mode">2. Mock mode (no credentials)</h2>
+          <div class="code-block-wrap">
+            <div class="code-block-wrap__toolbar">
+              <button
+                type="button"
+                class="code-copy"
+                data-copy-for="qs-mock-run"
+                aria-label="Copy mock mode command"
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="code-block" id="qs-mock-run"><code>npm run quickstart:mock</code></pre>
+          </div>
+          <p>Expected output (ids and times will differ):</p>
+          <div class="code-block-wrap">
+            <div class="code-block-wrap__toolbar">
+              <button
+                type="button"
+                class="code-copy"
+                data-copy-for="qs-mock-output"
+                aria-label="Copy expected mock output"
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="code-block" id="qs-mock-output"><code>MinuteGate quickstart (MOCK mode, no credentials)
+1. GET http://127.0.0.1:&lt;port&gt;/resource
+   -&gt; 402 Payment Required: 1.00 USD per session, reference mg_..., expires ...
+2. Create PayPal order
+   -&gt; order &lt;id&gt; (CREATED)
+3. Buyer step (simulated by the mock)
+4. Capture and retry with proof header
+   -&gt; 200, receipt (capture id) CAP-...
+5. Tamper check: pay 0.01 against a fresh reference and retry
+   -&gt; 402, error amount_mismatch
+Mock quickstart finished: 1 accepted payment, 1 rejected tamper attempt.</code></pre>
+          </div>
+          <p>Run the tests (also mock mode):</p>
+          <div class="code-block-wrap">
+            <div class="code-block-wrap__toolbar">
+              <button
+                type="button"
+                class="code-copy"
+                data-copy-for="qs-test"
+                aria-label="Copy test command"
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="code-block" id="qs-test"><code>npm test</code></pre>
+          </div>
+          <p>
+            The tests cover the accepted path and the rejections: wrong amount, wrong currency,
+            wrong reference, order reuse, buyer step with no capture, a made-up order id, an
+            unknown or expired reference, and a malformed proof header.
+          </p>
+
+          <h2 id="sandbox-mode">
+            <!-- TODO(Legal LR-1): QUICKSTART.md §3 heading names the payment provider. -->
+            3. Payment provider sandbox mode
+          </h2>
+          <p>
+            <!-- TODO(Legal LR-1): QUICKSTART.md names developer portal and buyer accounts for the payment provider. -->
+            You need your own sandbox app on the payment provider&apos;s developer portal (Apps
+            &amp; Credentials, Sandbox) and, for the capture step, a sandbox buyer account.
+            Credentials are read from your environment only; never commit them.
+          </p>
+          <div class="code-block-wrap">
+            <div class="code-block-wrap__toolbar">
+              <button
+                type="button"
+                class="code-copy"
+                data-copy-for="qs-env"
+                aria-label="Copy environment setup commands"
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="code-block" id="qs-env"><code>cp .env.example .env
+# https://api-m.sandbox.paypal.com
+PAYPAL_CLIENT_ID=your-sandbox-client-id
+PAYPAL_CLIENT_SECRET=your-sandbox-client-secret
+set -a; . ./.env; set +a</code></pre>
+          </div>
+          <p>
+            <code>.env</code> and every other <code>.env*</code> file except
+            <code>.env.example</code> are gitignored.
+          </p>
+
+          <h3 id="sandbox-partial">
+            <!-- TODO(Legal LR-1): QUICKSTART.md subsection title uses “approval”. -->
+            Sandbox: through order creation
+          </h3>
+          <div class="code-block-wrap">
+            <div class="code-block-wrap__toolbar">
+              <button
+                type="button"
+                class="code-copy"
+                data-copy-for="qs-sandbox-partial"
+                aria-label="Copy sandbox partial command"
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="code-block" id="qs-sandbox-partial"><code>npm run quickstart:sandbox</code></pre>
+          </div>
+          <p>
+            <!-- TODO(Legal LR-1): QUICKSTART.md names the payment provider in sandbox order steps. -->
+            This requests the resource, gets the 402, creates a sandbox order with the payment
+            provider, prints the buyer link, and stops. It does not capture: capture needs a
+            sandbox buyer to complete the order step first, using your own sandbox credentials.
+          </p>
+
+          <h3 id="sandbox-full">Sandbox: full flow (two terminals)</h3>
+          <p>Terminal 1, the example server (keeps its references in memory while it runs):</p>
+          <div class="code-block-wrap">
+            <div class="code-block-wrap__toolbar">
+              <button
+                type="button"
+                class="code-copy"
+                data-copy-for="qs-server"
+                aria-label="Copy sandbox server command"
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="code-block" id="qs-server"><code>npm run sandbox:server</code></pre>
+          </div>
+          <p>Terminal 2, the client:</p>
+          <div class="code-block-wrap">
+            <div class="code-block-wrap__toolbar">
+              <button
+                type="button"
+                class="code-copy"
+                data-copy-for="qs-client"
+                aria-label="Copy sandbox client command"
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="code-block" id="qs-client"><code>npm run sandbox:client</code></pre>
+          </div>
+          <p>
+            <!-- TODO(Legal LR-1): QUICKSTART.md names the payment provider buyer login. -->
+            It prints the buyer link and a follow-up command. Open the link, log in as your
+            sandbox buyer and complete the order step. Then run the printed command:
+          </p>
+          <div class="code-block-wrap">
+            <div class="code-block-wrap__toolbar">
+              <button
+                type="button"
+                class="code-copy"
+                data-copy-for="qs-client-args"
+                aria-label="Copy sandbox client with arguments"
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="code-block" id="qs-client-args"><code>npm run sandbox:client -- --reference mg_... --order &lt;order id&gt;</code></pre>
+          </div>
+          <p>
+            The client captures the order and retries with the proof header. The server looks the
+            order up with the payment provider and answers <code>200</code> with the capture id in
+            <code>minutegate-receipt</code>, or <code>402</code> with an error code (see
+            <a
+              href="https://github.com/gilrobertsiii/MinuteGate/blob/main/SPEC.md"
+              rel="noopener noreferrer"
+              >SPEC.md</a
+            >).
+          </p>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <ul>
+            <li>
+              <code>PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET must be set</code>: load your
+              <code>.env</code> (step 3) or use mock mode.
+            </li>
+            <li>
+              <code>PayPal token request failed (401)</code>: the credentials are not sandbox app
+              credentials, or have a typo.
+            </li>
+            <li>
+              <code>PayPal POST .../capture failed (422)</code>: no sandbox buyer has completed
+              the order step for the order yet.
+            </li>
+            <li>
+              <code>reference_expired</code>: references last 15 minutes; start again from
+              <code>npm run sandbox:client</code>.
+            </li>
+          </ul>
+        </div>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="wordmark site-footer__brand">MinuteGate</p>
+        <nav class="footer-nav" aria-label="Footer">
+          <ul class="footer-nav__list">
+            <li>
+              <a class="footer-nav__link" href="/#how-it-works">How it works</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/quickstart/" aria-current="page">Quickstart</a>
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate"
+                rel="noopener noreferrer"
+                >GitHub</a
+              >
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate/blob/main/LICENSE"
+                rel="noopener noreferrer"
+                >LICENSE</a
+              >
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate/blob/main/NOTICE"
+                rel="noopener noreferrer"
+                >NOTICE</a
+              >
+            </li>
+          </ul>
+        </nav>
+        <p class="footer-meta footer-legal">
+          © 2026 Gil Roberts. MinuteGate is released under the
+          <a
+            href="https://github.com/gilrobertsiii/MinuteGate/blob/main/LICENSE"
+            rel="noopener noreferrer"
+            >Apache-2.0 License</a
+          >.
+        </p>
+        <p class="footer-meta footer-trademark">
+          PayPal and Venmo are trademarks of PayPal, Inc. Not affiliated with or endorsed by
+          PayPal.
+        </p>
+      </div>
+    </footer>
+
+    <p class="visually-hidden" aria-live="polite" id="copy-status"></p>
+    <script src="/quickstart/quickstart.js" defer></script>
+  </body>
+</html>

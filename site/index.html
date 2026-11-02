@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MinuteGate</title>
+    <meta
+      name="description"
+      content="MinuteGate is an open-source protocol for per-minute, gated access. Developer docs and quickstart."
+    />
+    <meta property="og:title" content="MinuteGate" />
+    <meta
+      property="og:description"
+      content="Open-source protocol for per-minute, gated access. FanParking.Space and AIParking are the first applications built on it."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="site/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23D04B0A' width='32' height='32'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="wordmark" href="./index.html">MinuteGate</a>
+        <nav class="nav-actions" aria-label="Primary">
+          <a class="btn btn--ghost" href="#how-it-works">How it works</a>
+          <a class="btn btn--primary" href="#quickstart">Quickstart</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="section section--ink" aria-labelledby="hero-heading">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Open-source protocol</p>
+            <h1 id="hero-heading">MinuteGate</h1>
+            <p class="lead">
+              MinuteGate is an open-source protocol for per-minute, gated access.
+              FanParking.Space and AIParking are the first applications built on it.
+            </p>
+            <p>
+              <a class="btn btn--primary" href="#quickstart">Read the quickstart</a>
+            </p>
+          </div>
+          <figure class="hero-media">
+            <div
+              class="img-slot ratio-9-16 hero-mobile"
+              role="img"
+              aria-label="Placeholder for mobile hero artwork, nine by sixteen aspect ratio"
+            >
+              Hero · 9∶16
+            </div>
+            <div
+              class="img-slot ratio-16-9 hero-desktop"
+              role="img"
+              aria-label="Placeholder for desktop hero artwork, sixteen by nine aspect ratio"
+            >
+              Hero · 16∶9
+            </div>
+            <figcaption class="img-caption">AI concept · Created with Grok</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section
+        id="how-it-works"
+        class="section section--band"
+        aria-labelledby="how-heading"
+      >
+        <div class="container">
+          <p class="eyebrow">Protocol flow</p>
+          <h2 id="how-heading">How it works</h2>
+          <p class="lead">
+            Three steps from a gated request to a metered session. Payment rails ship as
+            extensions—you pick the rail that fits your stack.
+          </p>
+          <ol class="steps">
+            <li class="step">
+              <span class="step-num" aria-hidden="true">1</span>
+              <h3>Ask for access</h3>
+              <p>
+                An automated client requests a gated resource. The call carries the
+                context your gateway needs to quote time.
+              </p>
+            </li>
+            <li class="step">
+              <span class="step-num" aria-hidden="true">2</span>
+              <h3>Receive terms</h3>
+              <p>
+                The server responds with per-minute terms. Optional modules attach
+                payment rails via extensions when you enable them.
+              </p>
+            </li>
+            <li class="step">
+              <span class="step-num" aria-hidden="true">3</span>
+              <h3>Run the session</h3>
+              <p>
+                The client keeps access while the meter runs. Each minute ticks forward;
+                settlement follows the rail you configured.
+              </p>
+            </li>
+          </ol>
+          <div class="split" style="margin-top: 2.5rem">
+            <figure>
+              <div
+                class="img-slot ratio-2-3"
+                role="img"
+                aria-label="Placeholder for how-it-works illustration, two by three aspect ratio"
+              >
+                How it works · 2∶3
+              </div>
+              <figcaption class="img-caption">AI concept · Created with Grok</figcaption>
+            </figure>
+            <div>
+              <h3>Request and response shape</h3>
+              <p>
+                Keep hosts, amounts, and keys in sandbox placeholders until your gateway
+                is wired. The pattern stays the same in production configs.
+              </p>
+              <pre class="code-block"><code><span class="dim"># sandbox example</span>
+GET https://api.example.test/v1/resource
+Authorization: Bearer &lt;agent-token&gt;
+
+402 Payment Required
+{
+  "rate_per_minute": "0.05",
+  "currency": "USD",
+  "extensions": ["rail-a", "rail-b"]
+}</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="pricing-heading">
+        <div class="container split">
+          <div>
+            <p class="eyebrow">Metering</p>
+            <h2 id="pricing-heading">Per-minute pricing</h2>
+            <p class="lead">
+              Bill by the minute, not by the month. You publish a rate; clients consume
+              time in one-minute increments while a session stays open.
+            </p>
+            <p>
+              A citron tick on the meter marks each elapsed minute. When the session ends,
+              totals roll up on your chosen rail—no flat monthly gate for short agent
+              jobs.
+            </p>
+            <div class="meter-demo" aria-label="Sample per-minute meter">
+              <div class="meter-demo__label">
+                <span>Session meter</span>
+                <span>03:00</span>
+              </div>
+              <div class="meter">
+                <div class="meter__fill"></div>
+              </div>
+            </div>
+          </div>
+          <figure>
+            <div
+              class="img-slot ratio-1-1"
+              role="img"
+              aria-label="Placeholder for per-minute pricing illustration, square aspect ratio"
+            >
+              Per-minute · 1∶1
+            </div>
+            <figcaption class="img-caption">AI concept · Created with Grok</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section section--ink" aria-labelledby="agents-heading">
+        <div class="container split">
+          <figure>
+            <div
+              class="img-slot ratio-1-1"
+              role="img"
+              aria-label="Placeholder for agents illustration, square aspect ratio"
+            >
+              Agents · 1∶1
+            </div>
+            <figcaption class="img-caption">AI concept · Created with Grok</figcaption>
+          </figure>
+          <div>
+            <p class="eyebrow">Machine clients</p>
+            <h2 id="agents-heading">Agents</h2>
+            <p class="lead">
+              Machine clients can pay per minute over HTTP. MinuteGate targets agents,
+              workers, and scripts that need short, metered access without a human-facing
+              flow.
+            </p>
+            <p>
+              Gateways expose the same protocol to bots and services. You keep policy in
+              your stack; MinuteGate stays a thin access layer.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--band" aria-labelledby="oss-heading">
+        <div class="container split">
+          <div>
+            <p class="eyebrow">Source</p>
+            <h2 id="oss-heading">Open source</h2>
+            <p class="lead">
+              MinuteGate is open source under the Apache License, Version 2.0. Clone the
+              repo, track issues on GitHub, and ship your own gateway.
+            </p>
+            <p>
+              <a
+                class="btn btn--primary"
+                href="https://github.com/gilrobertsiii/MinuteGate"
+                rel="noopener noreferrer"
+                >View on GitHub</a
+              >
+            </p>
+            <p>
+              See <a href="../LICENSE">LICENSE</a> and <a href="../NOTICE">NOTICE</a> in
+              this repository for copyright and attribution.
+            </p>
+          </div>
+          <figure>
+            <div
+              class="img-slot ratio-2-3"
+              role="img"
+              aria-label="Placeholder for open-source section artwork, two by three aspect ratio"
+            >
+              Open source · 2∶3
+            </div>
+            <figcaption class="img-caption">AI concept · Created with Grok</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="quickstart" class="section" aria-labelledby="quickstart-heading">
+        <div class="container container--narrow">
+          <p class="eyebrow">Get started</p>
+          <h2 id="quickstart-heading">Quickstart</h2>
+          <p class="lead">
+            The repository README is the entry point. Read it for the current overview,
+            then open a GitHub issue if you need help.
+          </p>
+          <ul>
+            <li>
+              <a href="../README.md">README in this repo</a> (local clone)
+            </li>
+            <li>
+              <a
+                href="https://github.com/gilrobertsiii/MinuteGate#readme"
+                rel="noopener noreferrer"
+                >README on GitHub</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://github.com/gilrobertsiii/MinuteGate/issues"
+                rel="noopener noreferrer"
+                >GitHub issues</a
+              >
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="wordmark" style="color: var(--paper); margin: 0">MinuteGate</p>
+        <p class="footer-meta">
+          Copyright 2026 Gil Roberts. Licensed under the Apache License, Version 2.0.
+          See <a href="../LICENSE">LICENSE</a> and <a href="../NOTICE">NOTICE</a>.
+        </p>
+        <p class="footer-meta">
+          <a href="https://github.com/gilrobertsiii/MinuteGate">github.com/gilrobertsiii/MinuteGate</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

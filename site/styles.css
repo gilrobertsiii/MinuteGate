@@ -8,6 +8,7 @@
   --citron: #c2ec3a;
   --border: rgba(30, 26, 36, 0.14);
   --focus: var(--coral);
+  --focus-ring: 2px solid var(--focus);
   --r-sm: 10px;
   --w-read: 40rem;
   --w-content: 65rem;
@@ -20,6 +21,8 @@
   --font-mono: ui-monospace, "Cascadia Code", "Segoe UI Mono", "Roboto Mono",
     monospace;
 }
+
+/* TODO: prefers-color-scheme dark — add token overrides when design signs off inverted surfaces. */
 
 @media (min-width: 1280px) {
   :root {
@@ -68,13 +71,21 @@ a {
   text-underline-offset: 3px;
 }
 
-a:hover {
-  color: var(--coral);
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+.btn:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 3px;
 }
 
 :focus-visible {
-  outline: 2px solid var(--focus);
+  outline: var(--focus-ring);
   outline-offset: 3px;
+}
+
+a:hover {
+  color: var(--coral);
 }
 
 .skip-link {
@@ -88,7 +99,7 @@ a:hover {
   font-weight: 600;
 }
 
-.skip-link:focus {
+.skip-link:focus-visible {
   left: 1rem;
   top: 1rem;
 }
@@ -106,12 +117,21 @@ a:hover {
   margin: 0 auto;
   padding: 1rem 1.25rem;
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
+.site-header__inner .wordmark {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -123,30 +143,125 @@ a:hover {
   color: var(--coral);
 }
 
-.nav-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+.wordmark[aria-current="page"] {
+  color: var(--ink);
 }
 
-@media (max-width: 479px) {
-  .site-header__inner {
-    flex-wrap: nowrap;
-    gap: 0.75rem;
-  }
+.site-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
 
-  .wordmark {
-    min-width: 0;
-    flex-shrink: 1;
+.nav-disclosure {
+  position: relative;
+}
+
+.nav-disclosure__toggle {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.625rem 1rem;
+  border-radius: var(--r-sm);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
+  border: 2px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  transition: border-color var(--d-fast) var(--ease-out),
+    color var(--d-fast) var(--ease-out);
+}
+
+.nav-disclosure__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.nav-disclosure__toggle::marker {
+  content: "";
+}
+
+.nav-disclosure__toggle:hover {
+  border-color: var(--coral);
+  color: var(--coral-deep);
+}
+
+.nav-disclosure__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 60;
+  min-width: 12rem;
+  margin: 0;
+  padding: 0.5rem;
+  list-style: none;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  box-shadow: 0 8px 24px rgba(30, 26, 36, 0.12);
+}
+
+.nav-disclosure:not([open]) .nav-disclosure__panel {
+  display: none;
+}
+
+.nav-disclosure__link {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border-radius: calc(var(--r-sm) - 2px);
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.nav-disclosure__link:hover {
+  background: rgba(208, 75, 10, 0.08);
+  color: var(--coral-deep);
+}
+
+.nav-disclosure__link[aria-current="page"],
+.nav-disclosure__link[aria-current="location"] {
+  background: rgba(208, 75, 10, 0.1);
+  color: var(--coral-deep);
+}
+
+.nav-actions {
+  display: none;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .nav-disclosure {
+    display: none;
   }
 
   .nav-actions {
-    flex-wrap: nowrap;
-    flex-shrink: 0;
+    display: flex;
+    gap: 0.75rem;
   }
+}
 
-  .nav-actions .btn--ghost {
-    display: none;
+@media (min-width: 768px) and (max-width: 899px) {
+  .nav-actions .btn {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+    font-size: 0.9375rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .nav-actions .btn {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 1rem;
   }
 }
 
@@ -357,7 +472,7 @@ h3 {
 .img-caption {
   margin: 0.5rem 0 0;
   font-size: 0.75rem;
-  color: rgba(30, 26, 36, 0.65);
+  color: rgba(30, 26, 36, 0.75);
 }
 
 .section--ink .img-caption {

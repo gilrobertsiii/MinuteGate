@@ -24,10 +24,23 @@
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="site-header__inner">
-        <a class="wordmark" href="./index.html">MinuteGate</a>
-        <nav class="nav-actions" aria-label="Primary">
-          <a class="btn btn--ghost" href="#how-it-works">How it works</a>
-          <a class="btn btn--primary" href="#quickstart">Quickstart</a>
+        <a class="wordmark" href="./index.html" aria-current="page">MinuteGate</a>
+        <nav class="site-nav" aria-label="Primary">
+          <details class="nav-disclosure">
+            <summary class="nav-disclosure__toggle">Menu</summary>
+            <ul class="nav-disclosure__panel">
+              <li>
+                <a class="nav-disclosure__link" href="#how-it-works">How it works</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="#quickstart">Quickstart</a>
+              </li>
+            </ul>
+          </details>
+          <div class="nav-actions">
+            <a class="btn btn--ghost" href="#how-it-works">How it works</a>
+            <a class="btn btn--primary" href="#quickstart">Quickstart</a>
+          </div>
         </nav>
       </div>
     </header>

@@ -56,6 +56,7 @@
               MinuteGate is an open-source protocol for per-minute, gated access.
               FanParking.Space and AIParking are the first applications built on it.
             </p>
+            <p>Sandbox only; no real money moves.</p>
             <p>
               <a class="btn btn--primary" href="/quickstart/">Read the quickstart</a>
             </p>
@@ -89,8 +90,9 @@
           <p class="eyebrow">Protocol flow</p>
           <h2 id="how-heading">How it works</h2>
           <p class="lead">
-            Three steps from a gated request to a metered session. Payment rails ship as
-            extensions—you pick the rail that fits your stack.
+            Three steps from a gated request to a paid session. Version 0.1 accepts one
+            payment method, the payment provider&apos;s sandbox. Other methods are planned for
+            a later version.
           </p>
           <ol class="steps">
             <li class="step">
@@ -105,16 +107,17 @@
               <span class="step-num" aria-hidden="true">2</span>
               <h3>Receive terms</h3>
               <p>
-                The server responds with per-minute terms. Optional modules attach
-                payment rails via extensions when you enable them.
+                The server answers 402 with the amount, how it was priced, a single-use
+                reference and the accepted payment methods.
               </p>
             </li>
             <li class="step">
               <span class="step-num" aria-hidden="true">3</span>
               <h3>Run the session</h3>
               <p>
-                The client keeps access while the meter runs. Each minute ticks forward;
-                settlement follows the rail you configured.
+                The client pays in the payment provider&apos;s sandbox and retries with the proof
+                header. Before granting access, the server looks up the order with the payment
+                provider itself. In version 0.1 the client pays up front.
               </p>
             </li>
           </ol>
@@ -132,18 +135,22 @@
             <div>
               <h3>Request and response shape</h3>
               <p>
-                Keep hosts, amounts, and keys in sandbox placeholders until your gateway
-                is wired. The pattern stays the same in production configs.
+                Keep hosts, amounts, and keys in sandbox placeholders until your gateway is
+                wired.
               </p>
               <pre class="code-block"><code><span class="dim"># sandbox example</span>
 GET https://api.example.test/v1/resource
-Authorization: Bearer &lt;agent-token&gt;
 
 402 Payment Required
 {
-  "rate_per_minute": "0.05",
+  "minutegate": "0.1",
+  "amount": "1.00",
   "currency": "USD",
-  "extensions": ["rail-a", "rail-b"]
+  "rate": { "unit": "session", "price": "1.00", "quantity": 1 },
+  "reference": "mg_3q9X1kQp0bW7cT2s",
+  "expiresAt": "2026-11-02T12:30:00.000Z",
+  "methods": ["paypal-sandbox"],
+  "proofHeader": "minutegate-payment"
 }</code></pre>
             </div>
           </div>
@@ -333,6 +340,10 @@ Authorization: Bearer &lt;agent-token&gt;
             rel="noopener noreferrer"
             >Apache-2.0 License</a
           >.
+        </p>
+        <p class="footer-meta footer-trademark">
+          PayPal and Venmo are trademarks of PayPal, Inc. Not affiliated with or endorsed by
+          PayPal.
         </p>
       </div>
     </footer>

@@ -22,8 +22,6 @@
     monospace;
 }
 
-/* TODO: prefers-color-scheme dark — add token overrides when design signs off inverted surfaces. */
-
 @media (min-width: 1280px) {
   :root {
     --section-y: 6rem;
@@ -282,13 +280,18 @@ a:hover {
 }
 
 .btn--primary {
-  background: var(--coral);
+  background: var(--coral-deep);
   color: #fff;
 }
 
 .btn--primary:hover {
-  background: var(--coral-deep);
-  color: #fff;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn--primary:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 3px;
 }
 
 .btn--ghost {
@@ -479,6 +482,10 @@ h3 {
   color: rgba(250, 247, 242, 0.7);
 }
 
+.split--spaced-top {
+  margin-top: 2.5rem;
+}
+
 .steps {
   list-style: none;
   margin: 2rem 0 0;
@@ -661,7 +668,22 @@ h3 {
   color: var(--coral-deep);
 }
 
-.code-block-wrap .code-block {
+.code-copy[hidden] {
+  display: none;
+}
+
+.code-copy:not([hidden]) {
+  display: inline-flex;
+}
+
+.file-block-label {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.code-block--env-file {
   margin-top: 0;
 }
 

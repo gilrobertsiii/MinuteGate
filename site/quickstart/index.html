@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
     <title>Quickstart · MinuteGate</title>
     <meta
       name="description"
@@ -56,27 +60,25 @@
             <a
               href="https://github.com/gilrobertsiii/MinuteGate/blob/48a6752/QUICKSTART.md"
               rel="noopener noreferrer"
-              >QUICKSTART.md at 48a6752</a
+              >QUICKSTART.md</a
             >
+            at commit 48a6752.
           </p>
 
           <p>Two ways to run MinuteGate:</p>
           <ul>
             <li>
-              <!-- TODO(Legal LR-1): QUICKSTART.md names the payment provider in mock-mode intro. -->
-              <strong>Mock mode</strong> (start here, and the QA path): the full 402 flow end to
+              <strong>Mock mode</strong> (start here; it is also the QA path): the full 402 flow end to
               end against an in-process payment mock. No provider account, no credentials, no
               outbound network calls to the payment provider.
             </li>
             <li>
-              <!-- TODO(Legal LR-1): QUICKSTART.md names the payment provider in sandbox intro. -->
               <strong>Sandbox mode</strong> (payment provider): the same code against the
               payment provider&apos;s sandbox API host, using your own sandbox app credentials
               from the payment provider.
             </li>
           </ul>
           <p>
-            <!-- TODO(Legal LR-1): QUICKSTART.md names the payment provider sandbox explicitly. -->
             Payments shown use the payment provider&apos;s sandbox only; no real money moves.
           </p>
 
@@ -92,6 +94,7 @@
               <button
                 type="button"
                 class="code-copy"
+                hidden
                 data-copy-for="qs-install"
                 aria-label="Copy install commands"
               >
@@ -113,6 +116,7 @@ npm install</code></pre>
               <button
                 type="button"
                 class="code-copy"
+                hidden
                 data-copy-for="qs-mock-run"
                 aria-label="Copy mock mode command"
               >
@@ -121,12 +125,13 @@ npm install</code></pre>
             </div>
             <pre class="code-block" id="qs-mock-run"><code>npm run quickstart:mock</code></pre>
           </div>
-          <p>Expected output (ids and times will differ):</p>
+          <p>Expected output (paraphrased; IDs and times will differ):</p>
           <div class="code-block-wrap">
             <div class="code-block-wrap__toolbar">
               <button
                 type="button"
                 class="code-copy"
+                hidden
                 data-copy-for="qs-mock-output"
                 aria-label="Copy expected mock output"
               >
@@ -151,6 +156,7 @@ Mock quickstart finished: 1 accepted payment, 1 rejected tamper attempt.</code><
               <button
                 type="button"
                 class="code-copy"
+                hidden
                 data-copy-for="qs-test"
                 aria-label="Copy test command"
               >
@@ -161,51 +167,50 @@ Mock quickstart finished: 1 accepted payment, 1 rejected tamper attempt.</code><
           </div>
           <p>
             The tests cover the accepted path and the rejections: wrong amount, wrong currency,
-            wrong reference, order reuse, buyer step with no capture, a made-up order id, an
+            wrong reference, order reuse, buyer step with no capture, a made-up order ID, an
             unknown or expired reference, and a malformed proof header.
           </p>
 
-          <h2 id="sandbox-mode">
-            <!-- TODO(Legal LR-1): QUICKSTART.md §3 heading names the payment provider. -->
-            3. Payment provider sandbox mode
-          </h2>
+          <h2 id="sandbox-mode">3. Payment provider sandbox mode</h2>
           <p>
-            <!-- TODO(Legal LR-1): QUICKSTART.md names developer portal and buyer accounts for the payment provider. -->
             You need your own sandbox app on the payment provider&apos;s developer portal (Apps
             &amp; Credentials, Sandbox) and, for the capture step, a sandbox buyer account.
             Credentials are read from your environment only; never commit them.
           </p>
+          <pre id="qs-env-shell" hidden aria-hidden="true">cp .env.example .env
+set -a; . ./.env; set +a</pre>
           <div class="code-block-wrap">
             <div class="code-block-wrap__toolbar">
               <button
                 type="button"
                 class="code-copy"
-                data-copy-for="qs-env"
-                aria-label="Copy environment setup commands"
+                hidden
+                data-copy-for="qs-env-shell"
+                aria-label="Copy environment shell commands"
               >
                 Copy
               </button>
             </div>
-            <pre class="code-block" id="qs-env"><code>cp .env.example .env
-# https://api-m.sandbox.paypal.com
-PAYPAL_CLIENT_ID=your-sandbox-client-id
-PAYPAL_CLIENT_SECRET=your-sandbox-client-secret
-set -a; . ./.env; set +a</code></pre>
+            <pre class="code-block"><code>cp .env.example .env</code></pre>
           </div>
+          <p class="file-block-label">Edit .env</p>
+          <pre class="code-block code-block--env-file"><code># https://api-m.sandbox.paypal.com
+PAYPAL_CLIENT_ID=your-sandbox-client-id
+PAYPAL_CLIENT_SECRET=your-sandbox-client-secret</code></pre>
+          <p>Fill in your sandbox values in .env before loading it.</p>
+          <pre class="code-block"><code>set -a; . ./.env; set +a</code></pre>
           <p>
             <code>.env</code> and every other <code>.env*</code> file except
             <code>.env.example</code> are gitignored.
           </p>
 
-          <h3 id="sandbox-partial">
-            <!-- TODO(Legal LR-1): QUICKSTART.md subsection title uses “approval”. -->
-            Sandbox: through order creation
-          </h3>
+          <h3 id="sandbox-partial">Sandbox: through order creation</h3>
           <div class="code-block-wrap">
             <div class="code-block-wrap__toolbar">
               <button
                 type="button"
                 class="code-copy"
+                hidden
                 data-copy-for="qs-sandbox-partial"
                 aria-label="Copy sandbox partial command"
               >
@@ -215,7 +220,6 @@ set -a; . ./.env; set +a</code></pre>
             <pre class="code-block" id="qs-sandbox-partial"><code>npm run quickstart:sandbox</code></pre>
           </div>
           <p>
-            <!-- TODO(Legal LR-1): QUICKSTART.md names the payment provider in sandbox order steps. -->
             This requests the resource, gets the 402, creates a sandbox order with the payment
             provider, prints the buyer link, and stops. It does not capture: capture needs a
             sandbox buyer to complete the order step first, using your own sandbox credentials.
@@ -228,6 +232,7 @@ set -a; . ./.env; set +a</code></pre>
               <button
                 type="button"
                 class="code-copy"
+                hidden
                 data-copy-for="qs-server"
                 aria-label="Copy sandbox server command"
               >
@@ -242,6 +247,7 @@ set -a; . ./.env; set +a</code></pre>
               <button
                 type="button"
                 class="code-copy"
+                hidden
                 data-copy-for="qs-client"
                 aria-label="Copy sandbox client command"
               >
@@ -251,15 +257,15 @@ set -a; . ./.env; set +a</code></pre>
             <pre class="code-block" id="qs-client"><code>npm run sandbox:client</code></pre>
           </div>
           <p>
-            <!-- TODO(Legal LR-1): QUICKSTART.md names the payment provider buyer login. -->
             It prints the buyer link and a follow-up command. Open the link, log in as your
-            sandbox buyer and complete the order step. Then run the printed command:
+            sandbox buyer, and complete the order step. Then run the printed command:
           </p>
           <div class="code-block-wrap">
             <div class="code-block-wrap__toolbar">
               <button
                 type="button"
                 class="code-copy"
+                hidden
                 data-copy-for="qs-client-args"
                 aria-label="Copy sandbox client with arguments"
               >
@@ -270,7 +276,7 @@ set -a; . ./.env; set +a</code></pre>
           </div>
           <p>
             The client captures the order and retries with the proof header. The server looks the
-            order up with the payment provider and answers <code>200</code> with the capture id in
+            order up with the payment provider and answers <code>200</code> with the capture ID in
             <code>minutegate-receipt</code>, or <code>402</code> with an error code (see
             <a
               href="https://github.com/gilrobertsiii/MinuteGate/blob/main/SPEC.md"
@@ -287,7 +293,7 @@ set -a; . ./.env; set +a</code></pre>
             </li>
             <li>
               <code>PayPal token request failed (401)</code>: the credentials are not sandbox app
-              credentials, or have a typo.
+              credentials or contain a typo.
             </li>
             <li>
               <code>PayPal POST .../capture failed (422)</code>: no sandbox buyer has completed

@@ -8,10 +8,12 @@
   }
 
   document.querySelectorAll(".code-copy").forEach(function (button) {
+    button.removeAttribute("hidden");
     button.addEventListener("click", function () {
       var targetId = button.getAttribute("data-copy-for");
       var block = targetId ? document.getElementById(targetId) : null;
       if (!block) {
+        announce("Copy failed; select the text instead.");
         return;
       }
       var text = block.textContent || "";
@@ -25,7 +27,7 @@
             }, 2000);
           },
           function () {
-            announce("Copy failed");
+            announce("Copy failed; select the text instead.");
           }
         );
         return;
@@ -34,17 +36,27 @@
       range.selectNodeContents(block);
       var selection = window.getSelection();
       if (!selection) {
+        announce("Copy failed; select the text instead.");
         return;
       }
       selection.removeAllRanges();
       selection.addRange(range);
+      var copied = false;
       try {
-        document.execCommand("copy");
-        announce("Copied to clipboard");
+        copied = document.execCommand("copy");
       } catch (_err) {
-        announce("Copy failed");
+        copied = false;
       }
       selection.removeAllRanges();
+      if (copied) {
+        announce("Copied to clipboard");
+        button.textContent = "Copied";
+        window.setTimeout(function () {
+          button.textContent = "Copy";
+        }, 2000);
+      } else {
+        announce("Copy failed; select the text instead.");
+      }
     });
   });
 })();

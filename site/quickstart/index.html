@@ -177,28 +177,42 @@ Mock quickstart finished: 1 accepted payment, 1 rejected tamper attempt.</code><
             &amp; Credentials, Sandbox) and, for the capture step, a sandbox buyer account.
             Credentials are read from your environment only; never commit them.
           </p>
-          <pre id="qs-env-shell" hidden aria-hidden="true">cp .env.example .env
-set -a; . ./.env; set +a</pre>
           <div class="code-block-wrap">
             <div class="code-block-wrap__toolbar">
               <button
                 type="button"
                 class="code-copy"
                 hidden
-                data-copy-for="qs-env-shell"
-                aria-label="Copy environment shell commands"
+                data-copy-for="qs-env-cp"
+                aria-label="Copy copy env file command"
               >
                 Copy
               </button>
             </div>
-            <pre class="code-block"><code>cp .env.example .env</code></pre>
+            <pre class="code-block" id="qs-env-cp"><code>cp .env.example .env</code></pre>
           </div>
+          <p>
+            Open .env in your editor and fill in your sandbox values there, not at the shell
+            prompt.
+          </p>
           <p class="file-block-label">Edit .env</p>
           <pre class="code-block code-block--env-file"><code># https://api-m.sandbox.paypal.com
 PAYPAL_CLIENT_ID=your-sandbox-client-id
 PAYPAL_CLIENT_SECRET=your-sandbox-client-secret</code></pre>
-          <p>Fill in your sandbox values in .env before loading it.</p>
-          <pre class="code-block"><code>set -a; . ./.env; set +a</code></pre>
+          <div class="code-block-wrap">
+            <div class="code-block-wrap__toolbar">
+              <button
+                type="button"
+                class="code-copy"
+                hidden
+                data-copy-for="qs-env-load"
+                aria-label="Copy load env commands"
+              >
+                Copy
+              </button>
+            </div>
+            <pre class="code-block" id="qs-env-load"><code>set -a; . ./.env; set +a</code></pre>
+          </div>
           <p>
             <code>.env</code> and every other <code>.env*</code> file except
             <code>.env.example</code> are gitignored.

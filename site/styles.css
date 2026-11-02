@@ -526,11 +526,16 @@ h3 {
   display: grid;
   gap: 2rem;
   align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.split > * {
+  min-width: 0;
 }
 
 @media (min-width: 900px) {
   .split {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 

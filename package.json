@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test dist/test/mock-flow.test.js",
+    "test": "npm run build && node --test dist/test/mock-flow.test.js dist/test/protocol.test.js",
     "quickstart:mock": "npm run build && MINUTEGATE_MOCK=1 node dist/examples/quickstart.js",
     "quickstart:sandbox": "npm run build && node dist/examples/quickstart.js",
     "sandbox:server": "npm run build && node dist/examples/server.js",

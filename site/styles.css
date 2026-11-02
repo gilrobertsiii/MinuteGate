@@ -414,8 +414,22 @@ h3 {
 }
 
 .hero-media picture,
-.hero-media .img-slot {
+.hero-media .img-slot,
+.hero-media .site-img {
   width: 100%;
+}
+
+.site-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  width: 100%;
+  object-fit: contain;
+  border-radius: var(--r-sm);
+}
+
+figure > .site-img {
+  min-width: 0;
 }
 
 .img-slot {
@@ -468,7 +482,7 @@ h3 {
   }
 
   .hero-desktop {
-    display: flex;
+    display: block;
   }
 }
 

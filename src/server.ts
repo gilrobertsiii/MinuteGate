@@ -40,10 +40,12 @@ export type CheckResult =
 export class MinuteGate {
   private readonly issued = new Map<string, Issued>();
   private readonly usedOrders = new Set<string>();
-  // References and order ids whose check is in flight. Claimed synchronously before the
-  // first await so concurrent requests with the same proof cannot both pass.
+  // References whose check is in flight. Claimed synchronously before the first await so
+  // concurrent requests with the same proof cannot both pass. Together with the
+  // custom_id === reference check this means one order unlocks at most one reference,
+  // so order ids are not claimed: a third party submitting someone else's order id
+  // must not be able to block that order's owner while a lookup is in flight.
   private readonly pendingRefs = new Set<string>();
-  private readonly pendingOrders = new Set<string>();
   private readonly rate: Rate;
   private readonly currency: string;
   private readonly ttlMs: number;
@@ -91,10 +93,8 @@ export class MinuteGate {
     if (this.now() > issued.expiresAt) return { ok: false, code: "reference_expired" };
     if (this.usedOrders.has(proof.orderId)) return { ok: false, code: "order_reused" };
     if (this.pendingRefs.has(proof.reference)) return { ok: false, code: "reference_used" };
-    if (this.pendingOrders.has(proof.orderId)) return { ok: false, code: "order_reused" };
 
     this.pendingRefs.add(proof.reference);
-    this.pendingOrders.add(proof.orderId);
     try {
       const result = await this.verifyOrder(proof, issued);
       if (result.ok) {
@@ -104,7 +104,6 @@ export class MinuteGate {
       return result;
     } finally {
       this.pendingRefs.delete(proof.reference);
-      this.pendingOrders.delete(proof.orderId);
     }
   }
 

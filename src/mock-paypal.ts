@@ -44,6 +44,8 @@ export async function startMockPayPal(): Promise<MockPayPal> {
         const entry = orders.get(url.searchParams.get("token") ?? "");
         if (!entry) return send(404, { name: "RESOURCE_NOT_FOUND" });
         entry.buyerApproval = true;
+        // Real PayPal moves the order to APPROVED once the buyer approves it.
+        if (entry.order.status === "CREATED") entry.order.status = "APPROVED";
         return send(200, { ok: true });
       }
 

@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import { MinuteGate, createGateServer } from "../src/server.js";
-import { PayPalSandboxClient, PAYPAL_SANDBOX_BASE } from "../src/paypal.js";
+import { PayPalError, PayPalSandboxClient, PAYPAL_SANDBOX_BASE, type Order } from "../src/paypal.js";
 import { requestResource, startPayment, finishPayment, retryWithProof } from "../src/client.js";
 import { startMockPayPal, type MockPayPal } from "../src/mock-paypal.js";
 import { parseProof, formatProof, type PaymentRequired } from "../src/protocol.js";
@@ -16,21 +16,66 @@ let server: Server;
 let url: string;
 let clock = Date.now();
 
+/**
+ * Client whose server-side order lookups the tests can stall or fail, so the
+ * gate's in-flight claims can be exercised deterministically.
+ */
+class ControlledPayPal extends PayPalSandboxClient {
+  lookups = 0;
+  hold: Promise<void> | null = null;
+  failNext: Error | null = null;
+
+  async getOrder(orderId: string): Promise<Order> {
+    this.lookups++;
+    const fail = this.failNext;
+    if (fail) {
+      this.failNext = null;
+      throw fail;
+    }
+    if (this.hold) await this.hold;
+    return super.getOrder(orderId);
+  }
+}
+
+let controlled: ControlledPayPal;
+let controlledServer: Server;
+let controlledUrl: string;
+
+function deferred(): { promise: Promise<void>; resolve: () => void } {
+  let resolve!: () => void;
+  const promise = new Promise<void>((r) => (resolve = r));
+  return { promise, resolve };
+}
+
+async function waitForLookups(n: number): Promise<void> {
+  const deadline = Date.now() + 5000;
+  while (controlled.lookups < n) {
+    if (Date.now() > deadline) throw new Error(`timed out waiting for ${n} lookups (saw ${controlled.lookups})`);
+    await new Promise((r) => setTimeout(r, 5));
+  }
+}
+
 before(async () => {
   mock = await startMockPayPal();
   paypal = new PayPalSandboxClient({ ...mock.credentials, baseUrl: mock.baseUrl });
   server = createGateServer(new MinuteGate({ paypal, ttlSeconds: 600, now: () => clock }));
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/resource`;
+
+  controlled = new ControlledPayPal({ ...mock.credentials, baseUrl: mock.baseUrl });
+  controlledServer = createGateServer(new MinuteGate({ paypal: controlled, ttlSeconds: 600, now: () => clock }));
+  await new Promise<void>((resolve) => controlledServer.listen(0, "127.0.0.1", resolve));
+  controlledUrl = `http://127.0.0.1:${(controlledServer.address() as AddressInfo).port}/resource`;
 });
 
 after(async () => {
   await new Promise<void>((resolve) => server.close(() => resolve()));
+  await new Promise<void>((resolve) => controlledServer.close(() => resolve()));
   await mock.close();
 });
 
-async function fresh402(): Promise<PaymentRequired> {
-  const r = await requestResource(url);
+async function fresh402(target: string = url): Promise<PaymentRequired> {
+  const r = await requestResource(target);
   assert.equal(r.status, 402);
   assert.ok(r.required);
   return r.required;
@@ -110,8 +155,12 @@ test("rejects an order with buyer approval but no capture", async () => {
   const req = await fresh402();
   const pending = await startPayment(paypal, url, req);
   await mock.approve(pending.order.id);
+  // Buyer approval moves the order to APPROVED (as at PayPal), but nothing is captured yet.
+  assert.equal((await paypal.getOrder(pending.order.id)).status, "APPROVED");
   const r = await retryWithProof(url, req.reference, pending.order.id);
+  assert.equal(r.status, 402);
   assert.equal((r.body as PaymentRequired).error, "not_captured");
+  assert.equal(r.receipt, null);
 });
 
 test("rejects a made-up order id (client-supplied ids are only lookup keys)", async () => {
@@ -170,4 +219,79 @@ test("concurrent identical proofs unlock the resource exactly once", async () =>
     assert.equal(unlocked, 1, `trial ${trial}: ${unlocked} unlocks`);
     for (const r of results.filter((x) => x.status !== 200)) assert.equal(r.status, 402);
   }
+});
+
+test("a third party presenting someone else's order id cannot block the owner", async () => {
+  for (const attackerFirst of [true, false]) {
+    const victim = await fresh402(controlledUrl);
+    const orderId = await captured({ amount: victim.amount, currency: victim.currency, reference: victim.reference });
+    const attacker = await fresh402(controlledUrl);
+
+    const gate = deferred();
+    controlled.hold = gate.promise;
+    controlled.lookups = 0;
+    try {
+      let attackerAttempt: Promise<Awaited<ReturnType<typeof retryWithProof>>>;
+      let victimAttempt: Promise<Awaited<ReturnType<typeof retryWithProof>>>;
+      if (attackerFirst) {
+        attackerAttempt = retryWithProof(controlledUrl, attacker.reference, orderId);
+        await waitForLookups(1);
+        victimAttempt = retryWithProof(controlledUrl, victim.reference, orderId);
+      } else {
+        victimAttempt = retryWithProof(controlledUrl, victim.reference, orderId);
+        await waitForLookups(1);
+        attackerAttempt = retryWithProof(controlledUrl, attacker.reference, orderId);
+      }
+      // Both lookups for the victim's order are in flight at once: neither was turned away early.
+      await waitForLookups(2);
+
+      // A duplicate of the victim's own proof is still turned away by the reference claim.
+      // Wait until it either answers or (if the claim were missing) reaches a third lookup.
+      let duplicateSettled = false;
+      const duplicateAttempt = retryWithProof(controlledUrl, victim.reference, orderId).finally(() => {
+        duplicateSettled = true;
+      });
+      const deadline = Date.now() + 5000;
+      while (!duplicateSettled && controlled.lookups < 3 && Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 5));
+      }
+
+      gate.resolve();
+      const [v, a, duplicate] = await Promise.all([victimAttempt, attackerAttempt, duplicateAttempt]);
+      assert.equal(duplicate.status, 402, `attackerFirst=${attackerFirst}: duplicate proof got ${duplicate.status}`);
+      assert.equal((duplicate.body as PaymentRequired).error, "reference_used");
+
+      assert.notEqual((v.body as PaymentRequired).error, "order_reused", `attackerFirst=${attackerFirst}`);
+      assert.equal(v.status, 200, `attackerFirst=${attackerFirst}: victim got ${JSON.stringify(v.body)}`);
+      assert.match(v.receipt ?? "", /^CAP-/);
+
+      assert.equal(a.status, 402);
+      assert.equal((a.body as PaymentRequired).error, "reference_mismatch", `attackerFirst=${attackerFirst}`);
+    } finally {
+      gate.resolve();
+      controlled.hold = null;
+    }
+
+    // The order has now unlocked the victim's reference and cannot unlock anything else.
+    const again = await retryWithProof(controlledUrl, attacker.reference, orderId);
+    assert.equal((again.body as PaymentRequired).error, "order_reused");
+  }
+});
+
+test("claims are released when the PayPal lookup fails, so the same proof can be retried", async () => {
+  const req = await fresh402(controlledUrl);
+  const orderId = await captured({ amount: req.amount, currency: req.currency, reference: req.reference });
+
+  controlled.failNext = new PayPalError("PayPal GET order failed (503)", 503, { name: "SERVICE_UNAVAILABLE" });
+  try {
+    const first = await retryWithProof(controlledUrl, req.reference, orderId);
+    assert.equal(first.status, 402);
+    assert.equal((first.body as PaymentRequired).error, "paypal_unavailable");
+  } finally {
+    controlled.failNext = null;
+  }
+
+  const retry = await retryWithProof(controlledUrl, req.reference, orderId);
+  assert.equal(retry.status, 200, `retry got ${JSON.stringify(retry.body)}`);
+  assert.match(retry.receipt ?? "", /^CAP-/);
 });

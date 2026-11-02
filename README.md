@@ -26,8 +26,15 @@ npm test                    # mock-mode tests
 To run against the PayPal sandbox with your own sandbox app credentials, see
 [QUICKSTART.md](QUICKSTART.md).
 
-Payments shown are PayPal sandbox only; no real money moves. PayPal and Venmo are trademarks
-of PayPal, Inc. Not affiliated with or endorsed by PayPal.
+Payments shown are PayPal sandbox only; no real money moves.
+
+## Support and payments
+
+MinuteGate is an open-source project shared under the Apache-2.0 license, provided "AS IS" without warranties. Support comes from the community through GitHub Issues and discussions on this repository, on a best-effort basis. There is no paid or dedicated support.
+
+MinuteGate does not process, hold, or refund payments. Payments are handled by PayPal. Questions about a charge, refund, or dispute go to PayPal through your PayPal account. This demo uses the PayPal sandbox, and no real money moves.
+
+PayPal and Venmo are trademarks of PayPal, Inc. Not affiliated with or endorsed by PayPal.
 
 ## License
 

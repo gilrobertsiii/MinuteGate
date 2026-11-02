@@ -1,7 +1,7 @@
 # MinuteGate
 
-MinuteGate is an open protocol we're publishing under Apache-2.0. Payments run in sandbox
-only for this demo.
+MinuteGate is an open protocol we're publishing under Apache-2.0. Under development;
+payments run in sandbox only for this demo.
 
 This repository contains:
 

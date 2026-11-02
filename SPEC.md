@@ -51,8 +51,8 @@ whether it has been used.
 3. **Capture**: `POST /v2/checkout/orders/{id}/capture`.
 
 In this sandbox demo the client and the example server use the same PayPal sandbox app
-credentials, so the order is created on the server's own merchant account. A later version
-will separate the payer side from the merchant side.
+credentials, so the order is created on the server's own merchant account. Separating the
+payer side from the merchant side is planned for a later version.
 
 ## 3. Retry with proof
 
@@ -92,5 +92,5 @@ in-process PayPal mock for running without credentials, and tests.
 
 Not in 0.1: non-sandbox PayPal endpoints, webhooks, refunds, persistent storage of
 references, and any other payment method. In 0.1 the client pays before access, for the
-amount in the 402 body. A later version will include charging once when the session ends.
+amount in the 402 body. Charging once when the session ends is planned for a later version.
 The example server keeps references in memory, so they reset when it restarts.

@@ -97,6 +97,12 @@ Not in 0.1: non-sandbox PayPal endpoints, webhooks, refunds, persistent storage 
 references, and any other payment method. In 0.1 the client pays before access, for the
 amount in the 402 body. Charging once when the session ends is planned for a later version.
 The example server keeps references in memory, so they reset when it restarts.
+Memory is bounded: an expired or used reference (and the order id that used it) is
+remembered for `retainSeconds` after it expires (default: the reference lifetime) so late
+retries still get `reference_expired` or `reference_used`, then it is dropped and reads as
+`unknown_reference`. At most `maxReferences` (default 10000) references are held; past that
+the oldest that are not mid-check are dropped first. Outbound PayPal calls time out after
+`timeoutMs` (default 10000 ms) and surface as `paypal_unavailable`.
 
 ## Wire examples and parser behavior
 

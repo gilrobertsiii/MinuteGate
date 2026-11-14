@@ -21,8 +21,29 @@ export interface GateOptions {
   currency?: string;
   /** How long an issued reference stays open, in seconds. Default 900. */
   ttlSeconds?: number;
+  /**
+   * How long an expired or used reference is remembered after it expires, in
+   * seconds, so late retries still get `reference_expired` / `reference_used`
+   * instead of `unknown_reference`. Default: the same as ttlSeconds.
+   */
+  retainSeconds?: number;
+  /**
+   * Upper bound on references held in memory. When reached, expired entries
+   * are swept first, then the oldest entries that are not mid-check are
+   * dropped (a dropped reference reads as `unknown_reference`). Default 10000.
+   */
+  maxReferences?: number;
+  /** Minimum time between background sweeps of expired entries, in ms. Default 30000. */
+  sweepIntervalMs?: number;
   /** Clock override for tests. */
   now?: () => number;
+}
+
+/** Sizes of the gate's in-memory stores, for monitoring and tests. */
+export interface GateStats {
+  references: number;
+  usedOrders: number;
+  pending: number;
 }
 
 interface Issued {
@@ -39,7 +60,10 @@ export type CheckResult =
 
 export class MinuteGate {
   private readonly issued = new Map<string, Issued>();
-  private readonly usedOrders = new Set<string>();
+  // order id -> time (ms) after which it may be forgotten. An order id only ever
+  // unlocks the reference in its custom_id, so once that reference is gone the
+  // order is rejected anyway (unknown_reference / reference_mismatch).
+  private readonly usedOrders = new Map<string, number>();
   // References whose check is in flight. Claimed synchronously before the first await so
   // concurrent requests with the same proof cannot both pass. Together with the
   // custom_id === reference check this means one order unlocks at most one reference,
@@ -50,18 +74,67 @@ export class MinuteGate {
   private readonly currency: string;
   private readonly ttlMs: number;
   private readonly now: () => number;
+  private readonly retainMs: number;
+  private readonly maxReferences: number;
+  private readonly sweepIntervalMs: number;
+  private lastSweep = -Infinity;
 
   constructor(private readonly opts: GateOptions) {
     this.rate = opts.rate ?? { unit: "session", price: "1.00", quantity: 1 };
     this.currency = opts.currency ?? "USD";
     this.ttlMs = (opts.ttlSeconds ?? 900) * 1000;
+    this.retainMs = (opts.retainSeconds ?? opts.ttlSeconds ?? 900) * 1000;
+    this.maxReferences = Math.max(1, Math.floor(opts.maxReferences ?? 10_000));
+    this.sweepIntervalMs = opts.sweepIntervalMs ?? 30_000;
     this.now = opts.now ?? Date.now;
+  }
+
+  /** Current sizes of the in-memory stores. */
+  stats(): GateStats {
+    return { references: this.issued.size, usedOrders: this.usedOrders.size, pending: this.pendingRefs.size };
+  }
+
+  /**
+   * Drops references (and the order ids that used them) whose retention window
+   * has passed. References with a check in flight are never dropped.
+   */
+  sweep(): void {
+    const now = this.now();
+    this.lastSweep = now;
+    for (const [ref, entry] of this.issued) {
+      if (now > entry.expiresAt + this.retainMs && !this.pendingRefs.has(ref)) this.issued.delete(ref);
+    }
+    for (const [orderId, forgetAt] of this.usedOrders) {
+      if (now > forgetAt) this.usedOrders.delete(orderId);
+    }
+  }
+
+  private maybeSweep(): void {
+    if (this.now() - this.lastSweep >= this.sweepIntervalMs) this.sweep();
+  }
+
+  /** Makes room for one more reference, keeping the store at most maxReferences. */
+  private makeRoom(): void {
+    this.maybeSweep();
+    if (this.issued.size < this.maxReferences) return;
+    this.sweep();
+    // Map iteration is insertion order, so this drops the oldest first.
+    for (const ref of this.issued.keys()) {
+      if (this.issued.size < this.maxReferences) break;
+      if (!this.pendingRefs.has(ref)) this.issued.delete(ref);
+    }
+    while (this.usedOrders.size > this.maxReferences) {
+      const oldest = this.usedOrders.keys().next();
+      if (oldest.done) break;
+      this.usedOrders.delete(oldest.value);
+    }
   }
 
   /** Issues a new single-use reference and returns the 402 body. */
   paymentRequired(error?: RejectionCode): PaymentRequired {
     const reference = `mg_${randomBytes(12).toString("base64url")}`;
     const amount = totalFor(this.rate.price, this.rate.quantity);
+    this.makeRoom();
     const expiresAt = this.now() + this.ttlMs;
     this.issued.set(reference, { amount, currency: this.currency, rate: this.rate, expiresAt, used: false });
     return {
@@ -84,6 +157,7 @@ export class MinuteGate {
    * capture must match the reference, amount and currency the server issued.
    */
   async check(headerValue: string | undefined): Promise<CheckResult> {
+    this.maybeSweep();
     const proof = parseProof(headerValue);
     if (!proof) return { ok: false, code: "malformed_proof" };
 
@@ -99,7 +173,7 @@ export class MinuteGate {
       const result = await this.verifyOrder(proof, issued);
       if (result.ok) {
         issued.used = true;
-        this.usedOrders.add(proof.orderId);
+        this.usedOrders.set(proof.orderId, issued.expiresAt + this.retainMs);
       }
       return result;
     } finally {

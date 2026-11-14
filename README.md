@@ -23,8 +23,9 @@ npm run quickstart:mock     # full flow, no credentials
 npm test                    # mock-mode tests
 ```
 
-To run against the PayPal sandbox with your own sandbox app credentials, see
-[QUICKSTART.md](QUICKSTART.md).
+The commands above run the whole flow against an in-process PayPal mock, so no account is
+needed. **To run against the real PayPal sandbox API** with your own sandbox app credentials and
+a sandbox buyer account, follow section 3 of [QUICKSTART.md](QUICKSTART.md#3-paypal-sandbox-mode).
 
 Payments shown are PayPal sandbox only; no real money moves.
 

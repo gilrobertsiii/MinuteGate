@@ -63,6 +63,12 @@ You need your own PayPal sandbox app (developer.paypal.com, Apps & Credentials, 
 for the capture step, a PayPal sandbox buyer account. Credentials are read from your
 environment only; never commit them.
 
+- **Sandbox app:** on developer.paypal.com, open Apps & Credentials, switch to Sandbox, and
+  create an app. Its client ID and secret go in `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET`.
+- **Sandbox buyer:** under Testing Tools, Sandbox Accounts, PayPal creates a default Personal
+  (buyer) account, or you can create one. You sign in as that buyer in a web browser to approve
+  the order, so the full flow needs a browser as well as a terminal.
+
 ```bash
 cp .env.example .env        # fill in PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET
 set -a; . ./.env; set +a    # load them into this shell
@@ -88,6 +94,19 @@ Terminal 1, the example server (keeps its references in memory while it runs):
 npm run sandbox:server
 ```
 
+The server listens on `http://127.0.0.1:4020/resource`. To use another port, set `PORT` for
+the server and point the client at it with `MINUTEGATE_URL` (or `--url`):
+
+```bash
+PORT=4100 npm run sandbox:server
+MINUTEGATE_URL=http://127.0.0.1:4100/resource npm run sandbox:client
+```
+
+Stop the server with Ctrl+C. It shuts down cleanly on SIGINT or SIGTERM. If port 4020 is still
+in use afterwards (for example, because the `npm` wrapper was killed but its `node` child
+wasn't), stop the leftover process, or start the server directly with
+`node dist/examples/server.js` after `npm run build`.
+
 Terminal 2, the client:
 
 ```bash
@@ -100,6 +119,11 @@ sandbox buyer and approve. Then run the printed command:
 ```bash
 npm run sandbox:client -- --reference mg_... --order <order id>
 ```
+
+In the sandbox checkout, the "Review Order" (or "Continue") button can keep spinning after
+you approve, because the example has no return page to send you back to. **Run the follow-up
+command after you approve even if the page keeps spinning.** If the approval went through,
+the capture succeeds.
 
 The client captures the order and retries with the proof header. The server looks the order
 up with PayPal and answers `200` with the capture id in `minutegate-receipt`, or `402` with
@@ -114,5 +138,9 @@ an error code (see [SPEC.md](SPEC.md)).
 - `PayPal POST .../capture failed (422)`: no sandbox buyer has given approval for the order
   yet.
 - `reference_expired`: references last 15 minutes; start again from `npm run sandbox:client`.
+- `EADDRINUSE ... 4020`: an earlier server is still running; stop it, or use another `PORT`
+  (step 3).
+- The sandbox checkout page keeps spinning after approval: expected with the example; run the
+  follow-up `sandbox:client -- --reference ... --order ...` command anyway.
 
 PayPal and Venmo are trademarks of PayPal, Inc. Not affiliated with or endorsed by PayPal.

@@ -10,11 +10,21 @@ import type { Order } from "./paypal.js";
 interface MockOrder {
   order: Order;
   buyerApproval: boolean;
+  createdAt: number;
+}
+
+export interface MockPayPalOptions {
+  /** How long the mock keeps an order, in ms. Default 3 hours (PayPal's own window is longer). */
+  orderTtlMs?: number;
+  /** Clock override for tests. */
+  now?: () => number;
 }
 
 export interface MockPayPal {
   baseUrl: string;
   credentials: { clientId: string; clientSecret: string };
+  /** Current sizes of the mock's in-memory stores. */
+  stats(): { orders: number; tokens: number };
   /** Simulates the buyer clicking through the approval link. */
   approve(orderId: string): Promise<void>;
   close(): Promise<void>;
@@ -23,10 +33,21 @@ export interface MockPayPal {
 /** Placeholder credentials the mock accepts. They are not PayPal credentials. */
 export const MOCK_CREDENTIALS = { clientId: "mock-client-id", clientSecret: "mock-client-secret" };
 
-export async function startMockPayPal(): Promise<MockPayPal> {
+const TOKEN_TTL_SECONDS = 3600;
+
+export async function startMockPayPal(opts: MockPayPalOptions = {}): Promise<MockPayPal> {
   const orders = new Map<string, MockOrder>();
-  const tokens = new Set<string>();
+  // token -> expiry (ms). Expired tokens are rejected and dropped.
+  const tokens = new Map<string, number>();
+  const now = opts.now ?? Date.now;
+  const orderTtlMs = opts.orderTtlMs ?? 3 * 60 * 60 * 1000;
   let baseUrl = "";
+
+  const sweep = () => {
+    const t = now();
+    for (const [id, entry] of orders) if (t - entry.createdAt > orderTtlMs) orders.delete(id);
+    for (const [token, expiresAt] of tokens) if (t >= expiresAt) tokens.delete(token);
+  };
 
   const server: Server = createServer((req, res) => {
     const chunks: Buffer[] = [];
@@ -38,6 +59,7 @@ export async function startMockPayPal(): Promise<MockPayPal> {
         res.end(JSON.stringify(body));
       };
       const raw = Buffer.concat(chunks).toString("utf8");
+      sweep();
 
       // Buyer approval page (simulated).
       if (req.method === "GET" && url.pathname === "/mock/checkoutnow") {
@@ -53,8 +75,8 @@ export async function startMockPayPal(): Promise<MockPayPal> {
         const expected = Buffer.from(`${MOCK_CREDENTIALS.clientId}:${MOCK_CREDENTIALS.clientSecret}`).toString("base64");
         if (req.headers.authorization !== `Basic ${expected}`) return send(401, { error: "invalid_client" });
         const token = `mock_${randomBytes(8).toString("hex")}`;
-        tokens.add(token);
-        return send(200, { access_token: token, token_type: "Bearer", expires_in: 3600 });
+        tokens.set(token, now() + TOKEN_TTL_SECONDS * 1000);
+        return send(200, { access_token: token, token_type: "Bearer", expires_in: TOKEN_TTL_SECONDS });
       }
 
       const bearer = (req.headers.authorization ?? "").replace(/^Bearer /, "");
@@ -77,7 +99,7 @@ export async function startMockPayPal(): Promise<MockPayPal> {
             { href: `${baseUrl}/v2/checkout/orders/${id}/capture`, rel: "capture", method: "POST" },
           ],
         };
-        orders.set(id, { order, buyerApproval: false });
+        orders.set(id, { order, buyerApproval: false, createdAt: now() });
         return send(201, order);
       }
 
@@ -115,6 +137,10 @@ export async function startMockPayPal(): Promise<MockPayPal> {
   return {
     baseUrl,
     credentials: MOCK_CREDENTIALS,
+    stats: () => {
+      sweep();
+      return { orders: orders.size, tokens: tokens.size };
+    },
     async approve(orderId: string) {
       const res = await fetch(`${baseUrl}/mock/checkoutnow?token=${encodeURIComponent(orderId)}`);
       if (!res.ok) throw new Error(`mock approval failed for ${orderId}`);

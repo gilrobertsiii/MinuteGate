@@ -11,7 +11,12 @@ export interface PayPalConfig {
    * loopback URL (127.0.0.1 / localhost), used by the in-repo mock.
    */
   baseUrl?: string;
+  /** Per-request timeout for calls to PayPal, in ms. Default 10000. */
+  timeoutMs?: number;
 }
+
+/** Default timeout for outbound PayPal requests. */
+export const DEFAULT_PAYPAL_TIMEOUT_MS = 10_000;
 
 export interface Money {
   currency_code: string;
@@ -77,16 +82,41 @@ export function configFromEnv(env: NodeJS.ProcessEnv = process.env): PayPalConfi
 
 export class PayPalSandboxClient {
   readonly baseUrl: string;
+  readonly timeoutMs: number;
   private token: { value: string; expiresAt: number } | null = null;
+  // One token request at a time: concurrent callers after expiry share it.
+  private tokenInFlight: Promise<string> | null = null;
 
   constructor(private readonly config: PayPalConfig) {
     this.baseUrl = checkBaseUrl(config.baseUrl ?? PAYPAL_SANDBOX_BASE);
+    this.timeoutMs = config.timeoutMs ?? DEFAULT_PAYPAL_TIMEOUT_MS;
   }
 
-  private async accessToken(): Promise<string> {
-    if (this.token && Date.now() < this.token.expiresAt) return this.token.value;
+  /** fetch with a timeout; a timeout surfaces as PayPalError with status 0. */
+  private async send(url: string, init: RequestInit): Promise<Response> {
+    try {
+      return await fetch(url, { ...init, signal: AbortSignal.timeout(this.timeoutMs) });
+    } catch (err) {
+      if (err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError")) {
+        throw new PayPalError(`PayPal request timed out after ${this.timeoutMs} ms`, 0, null);
+      }
+      throw err;
+    }
+  }
+
+  private accessToken(): Promise<string> {
+    if (this.token && Date.now() < this.token.expiresAt) return Promise.resolve(this.token.value);
+    if (!this.tokenInFlight) {
+      this.tokenInFlight = this.fetchToken().finally(() => {
+        this.tokenInFlight = null;
+      });
+    }
+    return this.tokenInFlight;
+  }
+
+  private async fetchToken(): Promise<string> {
     const basic = Buffer.from(`${this.config.clientId}:${this.config.clientSecret}`).toString("base64");
-    const res = await fetch(`${this.baseUrl}/v1/oauth2/token`, {
+    const res = await this.send(`${this.baseUrl}/v1/oauth2/token`, {
       method: "POST",
       headers: {
         authorization: `Basic ${basic}`,
@@ -105,7 +135,7 @@ export class PayPalSandboxClient {
 
   private async call<T>(method: string, path: string, body?: unknown, extra: Record<string, string> = {}): Promise<T> {
     const token = await this.accessToken();
-    const res = await fetch(`${this.baseUrl}${path}`, {
+    const res = await this.send(`${this.baseUrl}${path}`, {
       method,
       headers: {
         authorization: `Bearer ${token}`,

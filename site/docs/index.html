@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
+    <title>Docs · MinuteGate</title>
+    <meta
+      name="description"
+      content="MinuteGate documentation hub: quickstart, protocol overview, SPEC, examples, and TypeScript API."
+    />
+    <meta property="og:title" content="MinuteGate docs" />
+    <meta
+      property="og:description"
+      content="Quickstart, protocol, SPEC, examples, and the TypeScript API from src/."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://minutegate.dev/docs/" />
+    <meta property="og:image" content="https://minutegate.dev/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="MinuteGate wordmark on an ink background: open-source protocol for per-minute, gated access."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="wordmark" href="/">MinuteGate</a>
+        <nav class="site-nav" aria-label="Primary">
+          <details class="nav-disclosure">
+            <summary class="nav-disclosure__toggle">Menu</summary>
+            <ul class="nav-disclosure__panel">
+              <li>
+                <a class="nav-disclosure__link" href="/#how-it-works">How it works</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/docs/" aria-current="page">Docs</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/protocol/">Protocol</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/about/">About</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/apps/">Apps</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/quickstart/">Quickstart</a>
+              </li>
+            </ul>
+          </details>
+          <div class="nav-actions nav-actions--wrap">
+            <a class="btn btn--ghost" href="/docs/" aria-current="page">Docs</a>
+            <a class="btn btn--ghost" href="/protocol/">Protocol</a>
+            <a class="btn btn--ghost" href="/about/">About</a>
+            <a class="btn btn--ghost" href="/apps/">Apps</a>
+            <a class="btn btn--primary" href="/quickstart/">Quickstart</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="doc-page">
+      <article class="section">
+        <div class="container doc-article">
+          <h1>Documentation</h1>
+          <p class="lead">
+            Guides and references for the MinuteGate HTTP 402 flow in this repository. Sandbox
+            only; no real money moves.
+          </p>
+
+          <ul class="link-grid">
+            <li>
+              <a class="link-card" href="/quickstart/">
+                <span class="link-card__title">Quickstart</span>
+                <span class="link-card__desc"
+                  >Install, mock mode, and PayPal sandbox flows from QUICKSTART.md.</span
+                >
+              </a>
+            </li>
+            <li>
+              <a class="link-card" href="/protocol/">
+                <span class="link-card__title">Protocol overview</span>
+                <span class="link-card__desc"
+                  >Plain-language summary of the wire protocol (spec 0.1).</span
+                >
+              </a>
+            </li>
+            <li>
+              <a
+                class="link-card"
+                href="https://github.com/gilrobertsiii/MinuteGate/blob/main/SPEC.md"
+                rel="noopener noreferrer"
+              >
+                <span class="link-card__title">SPEC.md</span>
+                <span class="link-card__desc"
+                  >Full protocol specification on GitHub.</span
+                >
+              </a>
+            </li>
+            <li>
+              <a
+                class="link-card"
+                href="https://github.com/gilrobertsiii/MinuteGate/tree/main/examples"
+                rel="noopener noreferrer"
+              >
+                <span class="link-card__title">examples/</span>
+                <span class="link-card__desc"
+                  >Quickstart script and two-terminal sandbox client and server.</span
+                >
+              </a>
+            </li>
+          </ul>
+
+          <h2 id="api">TypeScript API (<code>src/</code>)</h2>
+          <p>
+            Exported symbols from the package entry
+            (<a
+              href="https://github.com/gilrobertsiii/MinuteGate/tree/main/src"
+              rel="noopener noreferrer"
+              >src/</a
+            >). Re-exports are grouped by module.
+          </p>
+
+          <h3>protocol.ts</h3>
+          <div class="api-table-wrap">
+            <table class="api-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Kind</th>
+                  <th scope="col">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>SPEC_VERSION</code></td>
+                  <td>const</td>
+                  <td>Protocol version string (<code>0.1</code>).</td>
+                </tr>
+                <tr>
+                  <td><code>PROOF_HEADER</code></td>
+                  <td>const</td>
+                  <td>Header the client sends on the retry.</td>
+                </tr>
+                <tr>
+                  <td><code>RECEIPT_HEADER</code></td>
+                  <td>const</td>
+                  <td>Header the server returns on success with the PayPal capture id.</td>
+                </tr>
+                <tr>
+                  <td><code>RateUnit</code></td>
+                  <td>type</td>
+                  <td><code>"session"</code> or <code>"minute"</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>Rate</code></td>
+                  <td>interface</td>
+                  <td>Unit, per-unit price string, and quantity covered.</td>
+                </tr>
+                <tr>
+                  <td><code>PaymentRequired</code></td>
+                  <td>interface</td>
+                  <td>Body of an HTTP 402 response.</td>
+                </tr>
+                <tr>
+                  <td><code>RejectionCode</code></td>
+                  <td>type</td>
+                  <td>Error codes on a rejected retry; see SPEC.md.</td>
+                </tr>
+                <tr>
+                  <td><code>PaymentProof</code></td>
+                  <td>interface</td>
+                  <td>Reference and PayPal order id pair.</td>
+                </tr>
+                <tr>
+                  <td><code>formatProof</code></td>
+                  <td>function</td>
+                  <td>Formats a proof header value.</td>
+                </tr>
+                <tr>
+                  <td><code>parseProof</code></td>
+                  <td>function</td>
+                  <td>Parses a proof header value; returns null when malformed.</td>
+                </tr>
+                <tr>
+                  <td><code>totalFor</code></td>
+                  <td>function</td>
+                  <td>Multiplies a decimal price by quantity, returning <code>N.NN</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>toCents</code></td>
+                  <td>function</td>
+                  <td>Parses a decimal amount string into integer cents.</td>
+                </tr>
+                <tr>
+                  <td><code>fromCents</code></td>
+                  <td>function</td>
+                  <td>Formats integer cents as a two-place decimal string.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>client.ts</h3>
+          <div class="api-table-wrap">
+            <table class="api-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Kind</th>
+                  <th scope="col">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>PendingPayment</code></td>
+                  <td>interface</td>
+                  <td>URL, 402 body, created order, and buyer approval link.</td>
+                </tr>
+                <tr>
+                  <td><code>FetchResult</code></td>
+                  <td>interface</td>
+                  <td>HTTP status, decoded body, and receipt header value.</td>
+                </tr>
+                <tr>
+                  <td><code>requestResource</code></td>
+                  <td>function</td>
+                  <td>Requests the resource; returns the 402 body or null if not gated.</td>
+                </tr>
+                <tr>
+                  <td><code>startPayment</code></td>
+                  <td>function</td>
+                  <td>Creates a PayPal sandbox order for the 402 body.</td>
+                </tr>
+                <tr>
+                  <td><code>finishPayment</code></td>
+                  <td>function</td>
+                  <td>Captures the order after buyer approval, then retries with proof.</td>
+                </tr>
+                <tr>
+                  <td><code>retryWithProof</code></td>
+                  <td>function</td>
+                  <td>Retries the resource with the proof header.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>server.ts</h3>
+          <div class="api-table-wrap">
+            <table class="api-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Kind</th>
+                  <th scope="col">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>GateOptions</code></td>
+                  <td>interface</td>
+                  <td>PayPal client, rate, currency, reference TTL, and optional clock.</td>
+                </tr>
+                <tr>
+                  <td><code>CheckResult</code></td>
+                  <td>type</td>
+                  <td>Success with capture id or failure with a rejection code.</td>
+                </tr>
+                <tr>
+                  <td><code>MinuteGate</code></td>
+                  <td>class</td>
+                  <td>Issues references and checks proof headers against PayPal.</td>
+                </tr>
+                <tr>
+                  <td><code>createGateServer</code></td>
+                  <td>function</td>
+                  <td>HTTP server exposing one gated resource at <code>GET /resource</code>.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>paypal.ts</h3>
+          <div class="api-table-wrap">
+            <table class="api-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Kind</th>
+                  <th scope="col">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>PAYPAL_SANDBOX_BASE</code></td>
+                  <td>const</td>
+                  <td>Default PayPal sandbox API base URL.</td>
+                </tr>
+                <tr>
+                  <td><code>PayPalConfig</code></td>
+                  <td>interface</td>
+                  <td>Sandbox client id, secret, and optional base URL.</td>
+                </tr>
+                <tr>
+                  <td><code>Money</code>, <code>Capture</code>, <code>PurchaseUnit</code>, <code>Order</code></td>
+                  <td>interface</td>
+                  <td>Subset of PayPal order shapes used by MinuteGate.</td>
+                </tr>
+                <tr>
+                  <td><code>PayPalError</code></td>
+                  <td>class</td>
+                  <td>Error type for failed PayPal HTTP calls.</td>
+                </tr>
+                <tr>
+                  <td><code>configFromEnv</code></td>
+                  <td>function</td>
+                  <td>Reads PayPal sandbox credentials from the environment.</td>
+                </tr>
+                <tr>
+                  <td><code>PayPalSandboxClient</code></td>
+                  <td>class</td>
+                  <td>Minimal PayPal Orders v2 client for the sandbox.</td>
+                </tr>
+                <tr>
+                  <td><code>approvalLink</code></td>
+                  <td>function</td>
+                  <td>Returns the buyer approval link from a created order.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>mock-paypal.ts</h3>
+          <div class="api-table-wrap">
+            <table class="api-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Kind</th>
+                  <th scope="col">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>MockPayPal</code></td>
+                  <td>interface</td>
+                  <td>Loopback mock base URL, credentials, and approve/close helpers.</td>
+                </tr>
+                <tr>
+                  <td><code>MOCK_CREDENTIALS</code></td>
+                  <td>const</td>
+                  <td>Placeholder credentials the mock accepts (not PayPal credentials).</td>
+                </tr>
+                <tr>
+                  <td><code>startMockPayPal</code></td>
+                  <td>function</td>
+                  <td>Starts the in-process PayPal API mock server.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p>
+            PayPal and Venmo are trademarks of PayPal, Inc. Not affiliated with or endorsed by
+            PayPal.
+          </p>
+        </div>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="wordmark site-footer__brand">MinuteGate</p>
+        <nav class="footer-nav" aria-label="Footer">
+          <ul class="footer-nav__list">
+            <li>
+              <a class="footer-nav__link" href="/#how-it-works">How it works</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/docs/" aria-current="page">Docs</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/protocol/">Protocol</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/about/">About</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/apps/">Apps</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/quickstart/">Quickstart</a>
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate"
+                rel="noopener noreferrer"
+                >GitHub</a
+              >
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate/blob/main/LICENSE"
+                rel="noopener noreferrer"
+                >LICENSE</a
+              >
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate/blob/main/NOTICE"
+                rel="noopener noreferrer"
+                >NOTICE</a
+              >
+            </li>
+          </ul>
+        </nav>
+        <p class="footer-meta footer-legal">
+          © 2026 Gil Roberts. MinuteGate is released under the
+          <a
+            href="https://github.com/gilrobertsiii/MinuteGate/blob/main/LICENSE"
+            rel="noopener noreferrer"
+            >Apache-2.0 License</a
+          >.
+        </p>
+        <p class="footer-meta footer-trademark">
+          PayPal and Venmo are trademarks of PayPal, Inc. Not affiliated with or endorsed by
+          PayPal.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

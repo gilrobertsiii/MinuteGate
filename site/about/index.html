@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
+    <title>About · MinuteGate</title>
+    <meta
+      name="description"
+      content="What MinuteGate is: an open-source HTTP 402 protocol for per-minute, gated access."
+    />
+    <meta property="og:title" content="About MinuteGate" />
+    <meta
+      property="og:description"
+      content="Open-source protocol for per-minute, gated access. FanParking.Space and AIParking are the first applications built on it."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://minutegate.dev/about/" />
+    <meta property="og:image" content="https://minutegate.dev/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="MinuteGate wordmark on an ink background: open-source protocol for per-minute, gated access."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="wordmark" href="/">MinuteGate</a>
+        <nav class="site-nav" aria-label="Primary">
+          <details class="nav-disclosure">
+            <summary class="nav-disclosure__toggle">Menu</summary>
+            <ul class="nav-disclosure__panel">
+              <li>
+                <a class="nav-disclosure__link" href="/#how-it-works">How it works</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/docs/">Docs</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/protocol/">Protocol</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/about/" aria-current="page">About</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/apps/">Apps</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/quickstart/">Quickstart</a>
+              </li>
+            </ul>
+          </details>
+          <div class="nav-actions nav-actions--wrap">
+            <a class="btn btn--ghost" href="/docs/">Docs</a>
+            <a class="btn btn--ghost" href="/protocol/">Protocol</a>
+            <a class="btn btn--ghost" href="/about/" aria-current="page">About</a>
+            <a class="btn btn--ghost" href="/apps/">Apps</a>
+            <a class="btn btn--primary" href="/quickstart/">Quickstart</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="doc-page">
+      <article class="section">
+        <div class="container container--narrow doc-article">
+          <h1>About MinuteGate</h1>
+          <p class="lead">
+            MinuteGate is an open-source protocol for paying per minute over HTTP 402. FanParking.Space
+            and AIParking are the first applications built on it.
+          </p>
+          <p>
+            The project is under development. Payments shown in this repository run in the PayPal
+            sandbox only; no real money moves.
+          </p>
+          <p>
+            MinuteGate is published under the Apache License, Version 2.0. The repository holds the
+            protocol specification (<a
+              href="https://github.com/gilrobertsiii/MinuteGate/blob/main/SPEC.md"
+              rel="noopener noreferrer"
+              >SPEC.md</a
+            >), TypeScript source for a PayPal sandbox client and an example 402 server, examples,
+            and tests.
+          </p>
+          <p>
+            Support comes from the community through GitHub Issues and discussions on the
+            repository, on a best-effort basis. There is no paid or dedicated support. MinuteGate
+            does not process, hold, or refund payments. Payments are handled by PayPal.
+          </p>
+          <p>
+            PayPal and Venmo are trademarks of PayPal, Inc. Not affiliated with or endorsed by
+            PayPal.
+          </p>
+          <p>
+            <a class="btn btn--primary" href="/apps/">Applications on MinuteGate</a>
+            <a
+              class="btn btn--ghost"
+              href="https://github.com/gilrobertsiii/MinuteGate"
+              rel="noopener noreferrer"
+              >View on GitHub</a
+            >
+          </p>
+        </div>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="wordmark site-footer__brand">MinuteGate</p>
+        <nav class="footer-nav" aria-label="Footer">
+          <ul class="footer-nav__list">
+            <li>
+              <a class="footer-nav__link" href="/#how-it-works">How it works</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/docs/">Docs</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/protocol/">Protocol</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/about/" aria-current="page">About</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/apps/">Apps</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/quickstart/">Quickstart</a>
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate"
+                rel="noopener noreferrer"
+                >GitHub</a
+              >
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate/blob/main/LICENSE"
+                rel="noopener noreferrer"
+                >LICENSE</a
+              >
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate/blob/main/NOTICE"
+                rel="noopener noreferrer"
+                >NOTICE</a
+              >
+            </li>
+          </ul>
+        </nav>
+        <p class="footer-meta footer-legal">
+          © 2026 Gil Roberts. MinuteGate is released under the
+          <a
+            href="https://github.com/gilrobertsiii/MinuteGate/blob/main/LICENSE"
+            rel="noopener noreferrer"
+            >Apache-2.0 License</a
+          >.
+        </p>
+        <p class="footer-meta footer-trademark">
+          PayPal and Venmo are trademarks of PayPal, Inc. Not affiliated with or endorsed by
+          PayPal.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

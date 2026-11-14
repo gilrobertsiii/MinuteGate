@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
+    <title>Protocol · MinuteGate</title>
+    <meta
+      name="description"
+      content="Plain-language overview of the MinuteGate HTTP 402 wire protocol (spec 0.1)."
+    />
+    <meta property="og:title" content="MinuteGate protocol overview" />
+    <meta
+      property="og:description"
+      content="How gated HTTP resources use status 402, PayPal sandbox orders, and a proof header."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://minutegate.dev/protocol/" />
+    <meta property="og:image" content="https://minutegate.dev/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="MinuteGate wordmark on an ink background: open-source protocol for per-minute, gated access."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="wordmark" href="/">MinuteGate</a>
+        <nav class="site-nav" aria-label="Primary">
+          <details class="nav-disclosure">
+            <summary class="nav-disclosure__toggle">Menu</summary>
+            <ul class="nav-disclosure__panel">
+              <li>
+                <a class="nav-disclosure__link" href="/#how-it-works">How it works</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/docs/">Docs</a>
+              </li>
+              <li>
+                <a
+                  class="nav-disclosure__link"
+                  href="/protocol/"
+                  aria-current="page"
+                  >Protocol</a
+                >
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/about/">About</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/apps/">Apps</a>
+              </li>
+              <li>
+                <a class="nav-disclosure__link" href="/quickstart/">Quickstart</a>
+              </li>
+            </ul>
+          </details>
+          <div class="nav-actions nav-actions--wrap">
+            <a class="btn btn--ghost" href="/docs/">Docs</a>
+            <a class="btn btn--ghost" href="/protocol/" aria-current="page">Protocol</a>
+            <a class="btn btn--ghost" href="/about/">About</a>
+            <a class="btn btn--ghost" href="/apps/">Apps</a>
+            <a class="btn btn--primary" href="/quickstart/">Quickstart</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="doc-page">
+      <article class="section">
+        <div class="container container--narrow doc-article">
+          <h1>MinuteGate wire protocol</h1>
+          <p class="doc-mirror">
+            Summary of
+            <a
+              href="https://github.com/gilrobertsiii/MinuteGate/blob/main/SPEC.md"
+              rel="noopener noreferrer"
+              >SPEC.md</a
+            >
+            (version 0.1). Payments run against the PayPal sandbox only; no real money moves.
+          </p>
+
+          <h2>Roles</h2>
+          <ul>
+            <li><strong>Server</strong> — hosts a resource and charges for access to it.</li>
+            <li>
+              <strong>Client</strong> — requests the resource and pays through PayPal (sandbox).
+            </li>
+            <li><strong>PayPal</strong> — the PayPal Orders v2 API at the sandbox endpoint.</li>
+          </ul>
+
+          <h2>1. Payment required</h2>
+          <p>
+            A client requests a resource with no proof header. The server answers
+            <code>402 Payment Required</code> with a JSON body. The body includes protocol version
+            (<code>minutegate</code>, currently <code>0.1</code>), total <code>amount</code> and
+            <code>currency</code>, a <code>rate</code> object (<code>unit</code> is
+            <code>session</code> or <code>minute</code>, <code>price</code> per unit,
+            <code>quantity</code> of units; <code>amount</code> equals <code>price</code> ×
+            <code>quantity</code>), a single-use <code>reference</code>, <code>expiresAt</code>,
+            accepted <code>methods</code> (spec 0.1 defines only <code>paypal-sandbox</code>),
+            and the <code>proofHeader</code> name for the retry. Optional
+            <code>description</code> text may appear. The server stores each reference with amount,
+            currency, rate, expiry, and whether it has been used.
+          </p>
+          <p>
+            A tick on the meter marks each elapsed minute. In version 0.1 each session is paid up
+            front; settling totals when the session ends is planned for a later version. No flat
+            monthly gate for short agent jobs.
+          </p>
+
+          <h2>2. Client pays through PayPal (sandbox)</h2>
+          <ol>
+            <li>
+              <strong>Create order</strong> — <code>POST /v2/checkout/orders</code> with
+              <code>intent: "CAPTURE"</code> and one purchase unit whose amount matches the 402
+              body and whose <code>custom_id</code> (and <code>reference_id</code>) is the
+              MinuteGate <code>reference</code>.
+            </li>
+            <li>
+              <strong>Buyer step</strong> — the buyer opens the order&apos;s approve link and
+              completes the payment step as a PayPal sandbox buyer.
+            </li>
+            <li>
+              <strong>Capture</strong> — <code>POST /v2/checkout/orders/{id}/capture</code>.
+            </li>
+          </ol>
+          <p>
+            In this sandbox demo the client and the example server use the same PayPal sandbox app
+            credentials, so the order is created on the server&apos;s own merchant account.
+            Separating the payer side from the merchant side is planned for a later version.
+          </p>
+          <p>
+            PayPal and Venmo are trademarks of PayPal, Inc. Not affiliated with or endorsed by
+            PayPal.
+          </p>
+
+          <h2>3. Retry with proof</h2>
+          <p>
+            The client repeats the original request with the proof header (default name
+            <code>minutegate-payment</code>):
+          </p>
+          <pre class="code-block"><code>minutegate-payment: reference=mg_EXAMPLE123456789; order=EXAMPLE-ORDER-001</code></pre>
+
+          <h2>4. Server-side check</h2>
+          <p>
+            The order id in the header is a lookup key only. The server does not grant access
+            because a client asserts an order exists or was captured. For each retry the server:
+          </p>
+          <ol>
+            <li>Parses the header; rejects malformed values (<code>malformed_proof</code>).</li>
+            <li>
+              Looks up the reference in its own records; rejects unknown
+              (<code>unknown_reference</code>), already used (<code>reference_used</code>), or
+              expired (<code>reference_expired</code>) references.
+            </li>
+            <li>Rejects an order id that already unlocked a resource (<code>order_reused</code>).</li>
+            <li>
+              Fetches the order from PayPal with its own credentials. An order PayPal does not
+              return is rejected (<code>order_not_found</code>); a PayPal outage gives
+              <code>paypal_unavailable</code>.
+            </li>
+            <li>
+              Requires exactly one purchase unit whose <code>custom_id</code> equals the reference
+              (<code>reference_mismatch</code>).
+            </li>
+            <li>
+              Requires order status <code>COMPLETED</code> with a capture in status
+              <code>COMPLETED</code> (<code>not_captured</code>).
+            </li>
+            <li>
+              Requires purchase unit and capture amounts to match the issued currency
+              (<code>currency_mismatch</code>) and amount (<code>amount_mismatch</code>).
+            </li>
+            <li>
+              On success, marks the reference and order id as used and answers <code>200</code>
+              with the resource. The PayPal capture id is returned in the
+              <code>minutegate-receipt</code> header.
+            </li>
+          </ol>
+          <p>
+            A rejected retry gets a new <code>402</code> body with a fresh reference and an
+            <code>error</code> code from the list above.
+          </p>
+
+          <h2>Proof header grammar (as implemented)</h2>
+          <p>
+            The client emits <code>reference=&lt;reference&gt;; order=&lt;orderId&gt;</code>.
+            References match <code>mg_</code> plus 8–64 ASCII letters, digits, underscores, or
+            hyphens. Order ids are 1–64 uppercase ASCII letters, digits, or hyphens. Extra fields
+            with <code>=</code> are ignored; the last duplicate key wins. These are current parser
+            behaviors. Strict duplicate or unknown-field rejection is not implemented.
+          </p>
+
+          <h2>Scope of version 0.1</h2>
+          <p>
+            In this repository: the flow above, a TypeScript PayPal sandbox client, an example
+            server, an in-process PayPal mock for running without credentials, and tests.
+          </p>
+          <p><strong>Not in 0.1:</strong></p>
+          <ul>
+            <li>Non-sandbox PayPal endpoints.</li>
+            <li>Webhooks.</li>
+            <li>Refunds.</li>
+            <li>Persistent storage of references.</li>
+            <li>Any other payment method.</li>
+            <li>
+              Charging once when the session ends instead of up front — planned for a later
+              version.
+            </li>
+          </ul>
+          <p>
+            The example server keeps references in memory, so they reset when it restarts.
+            Reference lifetime defaults to 900 seconds; each <code>402</code> issues a new
+            reference.
+          </p>
+
+          <p>
+            <a class="btn btn--primary" href="/docs/">Back to docs</a>
+            <a
+              class="btn btn--ghost"
+              href="https://github.com/gilrobertsiii/MinuteGate/blob/main/SPEC.md"
+              rel="noopener noreferrer"
+              >Full SPEC on GitHub</a
+            >
+          </p>
+        </div>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="wordmark site-footer__brand">MinuteGate</p>
+        <nav class="footer-nav" aria-label="Footer">
+          <ul class="footer-nav__list">
+            <li>
+              <a class="footer-nav__link" href="/#how-it-works">How it works</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/docs/">Docs</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/protocol/" aria-current="page">Protocol</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/about/">About</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/apps/">Apps</a>
+            </li>
+            <li>
+              <a class="footer-nav__link" href="/quickstart/">Quickstart</a>
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate"
+                rel="noopener noreferrer"
+                >GitHub</a
+              >
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate/blob/main/LICENSE"
+                rel="noopener noreferrer"
+                >LICENSE</a
+              >
+            </li>
+            <li>
+              <a
+                class="footer-nav__link"
+                href="https://github.com/gilrobertsiii/MinuteGate/blob/main/NOTICE"
+                rel="noopener noreferrer"
+                >NOTICE</a
+              >
+            </li>
+          </ul>
+        </nav>
+        <p class="footer-meta footer-legal">
+          © 2026 Gil Roberts. MinuteGate is released under the
+          <a
+            href="https://github.com/gilrobertsiii/MinuteGate/blob/main/LICENSE"
+            rel="noopener noreferrer"
+            >Apache-2.0 License</a
+          >.
+        </p>
+        <p class="footer-meta footer-trademark">
+          PayPal and Venmo are trademarks of PayPal, Inc. Not affiliated with or endorsed by
+          PayPal.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
